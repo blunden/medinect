@@ -28,7 +28,7 @@ class ofxKinect : public ofBaseVideo, protected ofxThread{
 		void close();
         
 		/// initialize resources, must be called before open()
-		bool init(bool bTexture=true);
+		bool init(bool infrared=false, bool bTexture=true);
 		
 		bool setCameraTiltAngle(float angleInDegrees);
         
@@ -40,12 +40,15 @@ class ofxKinect : public ofBaseVideo, protected ofxThread{
 	
 		float getDistanceAt(int x, int y);
 		float getDistanceAt(const ofPoint & p);
+		
+		/// calculates the coordinate in the world for the pixel (perspective calculation). Center  of image is (0.0)
+		ofxPoint3f getWorldCoordinateFor(int x, int y);
 
 		ofColor	getColorAt(int x, int y);
 		ofColor getColorAt(const ofPoint & p);
 
 		ofColor getCalibratedColorAt(int x, int y);
-		ofColor getCalibratedColorAt(const ofPoint & p);
+		ofColor getCalibratedColorAt(const ofPoint & p);		
 
 		ofxMatrix4x4 getRGBDepthMatrix();
 		void setRGBDepthMatrix(const ofxMatrix4x4 & matrix);
@@ -100,12 +103,12 @@ class ofxKinect : public ofBaseVideo, protected ofxThread{
 
 		bool					bUseTexture;
 		ofTexture				depthTex;			// the depth texture
-		ofTexture 				rgbTex;				// the RGB texture
+		ofTexture 				videoTex;				// the RGB texture
 		bool 					bVerbose;
 		bool 					bGrabberInited;
 		
 		unsigned char *			depthPixels;
-		unsigned char *			rgbPixels;
+		unsigned char *			videoPixels;
 		unsigned char *			calibratedRGBPixels;
 		
 		unsigned short *		depthPixelsRaw;
@@ -116,6 +119,12 @@ class ofxKinect : public ofBaseVideo, protected ofxThread{
         
 		float targetTiltAngleDeg;
 		bool bTiltNeedsApplying;
+	
+		static void calculateLookups();
+		static bool lookupsCalculated;
+		static float distancePixelsLookup[2048];
+		static unsigned char depthPixelsLookupNearWhite[2048];
+		static unsigned char depthPixelsLookupFarWhite[2048];
 		
     private:
 
@@ -123,7 +132,7 @@ class ofxKinect : public ofBaseVideo, protected ofxThread{
 		freenect_device * 	kinectDevice;	// kinect device handle
 		
 		unsigned short *	depthPixelsBack;	// depth back
-		unsigned char *		rgbPixelsBack;		// rgb back
+		unsigned char *		videoPixelsBack;		// rgb back
 		
 		bool bNeedsUpdate;
 		bool bUpdateTex;
@@ -132,9 +141,12 @@ class ofxKinect : public ofBaseVideo, protected ofxThread{
 		
 		ofxMatrix4x4		rgbDepthMatrix;
 
+		bool				bInfrared;
+		int					bytespp;
+
 		// libfreenect callbacks
 		static void grabDepthFrame(freenect_device *dev, void *depth, uint32_t timestamp);
-		static void grabRgbFrame(freenect_device *dev, freenect_pixel *rgb, uint32_t timestamp);
+		static void grabRgbFrame(freenect_device *dev, void *rgb, uint32_t timestamp);
     
 		// thread function
 		void threadedFunction();

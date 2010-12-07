@@ -1,12 +1,17 @@
 #include "ofxKinect.h"
-#include "ofUtils.h"
-#include "ofMath.h"
+#include "ofMain.h"
 
 // pointer to this class for static callback member functions
 ofxKinect* thisKinect = NULL;
 
+bool ofxKinect::lookupsCalculated = false;
+float ofxKinect::distancePixelsLookup[2048];
+unsigned char ofxKinect::depthPixelsLookupNearWhite[2048];
+unsigned char ofxKinect::depthPixelsLookupFarWhite[2048];
+
 //--------------------------------------------------------------------
 ofxKinect::ofxKinect(){
+	ofLog(OF_LOG_VERBOSE, "Creating ofxKinect.");
 
 	//TODO: reset the right ones of these on close
 	// common
@@ -16,8 +21,8 @@ ofxKinect::ofxKinect(){
 	depthPixels				= NULL;
 	depthPixelsRaw			= NULL;
 	depthPixelsBack			= NULL;
-	rgbPixels		  		= NULL;
-	rgbPixelsBack			= NULL;
+	videoPixels		  		= NULL;
+	videoPixelsBack			= NULL;
 	calibratedRGBPixels		= NULL;
 	distancePixels 			= NULL;
 
@@ -50,6 +55,32 @@ ofxKinect::ofxKinect(){
 	rgbDepthMatrix.getPtr()[13]=0.000003;
 	rgbDepthMatrix.getPtr()[14]=0.000000;
 	rgbDepthMatrix.getPtr()[15]=1.000000;
+	
+	calculateLookups();
+}
+
+void ofxKinect::calculateLookups() {
+	if(!lookupsCalculated) {
+		ofLog(OF_LOG_VERBOSE, "Setting up LUT for distance and depth values.");
+		for(int i = 0; i < 2048; i++){
+			if(i == 2047) {
+				distancePixelsLookup[i] = 0;
+				depthPixelsLookupNearWhite[i] = 0;
+				depthPixelsLookupFarWhite[i] = 0;
+			} else {
+				// using equation from http://openkinect.org/wiki/Imaging_Information
+				const float k1 = 0.1236;
+				const float k2 = 2842.5;
+				const float k3 = 1.1863;
+				const float k4 = 0.0370;
+				distancePixelsLookup[i] = k1 * tanf(i / k2 + k3) - k4; // calculate in meters
+				distancePixelsLookup[i] *= 100; // convert to centimeters
+				depthPixelsLookupNearWhite[i] = (float) (2048 * 256) / (i - 2048);
+				depthPixelsLookupFarWhite[i] = 255 - depthPixelsLookupNearWhite[i];
+			}
+		}
+	}
+	lookupsCalculated = true;
 }
 
 
@@ -66,7 +97,7 @@ void ofxKinect::setVerbose(bool bTalkToMe){
 
 //---------------------------------------------------------------------------
 unsigned char * ofxKinect::getPixels(){
-	return rgbPixels;
+	return videoPixels;
 }
 
 //---------------------------------------------------------------------------
@@ -95,9 +126,9 @@ unsigned char * ofxKinect::getCalibratedRGBPixels(){
 			texcoord3d.x = ofClamp(texcoord3d.x,0,640);
 			texcoord3d.y = ofClamp(texcoord3d.y,0,480);
 			int pos = int(texcoord3d.y)*640*3+int(texcoord3d.x)*3;
-			*calibratedPixels++ = rgbPixels[pos];
-			*calibratedPixels++ = rgbPixels[pos+1];
-			*calibratedPixels++ = rgbPixels[pos+2];
+			*calibratedPixels++ = videoPixels[pos];
+			*calibratedPixels++ = videoPixels[pos+1];
+			*calibratedPixels++ = videoPixels[pos+2];
 		}
 	}
 	return calibratedRGBPixels;
@@ -105,10 +136,10 @@ unsigned char * ofxKinect::getCalibratedRGBPixels(){
 
 //------------------------------------
 ofTexture & ofxKinect::getTextureReference(){
-	if(!rgbTex.bAllocated()){
+	if(!videoTex.bAllocated()){
 		ofLog(OF_LOG_WARNING, "ofxKinect: getTextureReference - texture is not allocated");
 	}
-	return rgbTex;
+	return videoTex;
 }
 
 //---------------------------------------------------------------------------
@@ -134,6 +165,26 @@ bool ofxKinect::open(){
 		return false;
 	}
 
+	if (freenect_init(&kinectContext, NULL) < 0) {
+		ofLog(OF_LOG_ERROR, "ofxKinect: freenet_init failed");
+		return false;
+	}
+
+	int number_devices = freenect_num_devices(kinectContext);
+	ofLog(OF_LOG_VERBOSE, "ofxKinect: Number of Devices found: " + ofToString(number_devices));
+
+	if (number_devices < 1) {
+		ofLog(OF_LOG_ERROR, "ofxKinect: Did not find a device");
+		return false;
+	}
+
+	if (freenect_open_device(kinectContext, &kinectDevice, 0) < 0) {
+		ofLog(OF_LOG_ERROR, "ofxKinect: Could not open device");
+		return false;
+	}
+
+	freenect_set_user(kinectDevice, this);
+
 	startThread(true, false);	// blocking, not verbose
 
 	return true;
@@ -142,42 +193,35 @@ bool ofxKinect::open(){
 //---------------------------------------------------------------------------
 void ofxKinect::close(){
 	if(isThreadRunning()){
-		stopThread();
+		waitForThread(true);
 	}
 
-	usleep(500000); // some time while thread is stopping ...
+	//usleep(500000); // some time while thread is stopping ...
 
 	//libusb_exit(NULL);
 }
 
-//We update the value here - but apply it in update(). 
+//We update the value here - but apply it in kinect thread.
 //--------------------------------------------------------------------
 bool ofxKinect::setCameraTiltAngle(float angleInDegrees){
 
-	//TODO: fix this - it causes the call to libusb_control_transfer to hang. 
-	ofLog(OF_LOG_ERROR, "ofxKinect: Sorry setCameraTiltAngle is not currently working correctly");
-	return false;
 
 	if(!kinectContext){
 		return false;
 	}
 
-	if ( this->lock() ) {		
-		targetTiltAngleDeg = angleInDegrees;
-		bTiltNeedsApplying = true;
-		printf("ANGLE SET!\n");
-		this->unlock();
-		printf("unlocked from setCameraTiltAngle!\n");
-		
-		return true;
-	}
-	
-	return false;
+	targetTiltAngleDeg = ofClamp(angleInDegrees,-30,30);
+	bTiltNeedsApplying = true;
+
+	return true;
 }
 
 //--------------------------------------------------------------------
-bool ofxKinect::init(bool setUseTexture){
+bool ofxKinect::init(bool infrared, bool setUseTexture){
 	clear();
+
+	bInfrared = infrared;
+	bytespp = infrared?1:3;
 
 	bUseTexture = setUseTexture;
 
@@ -187,21 +231,21 @@ bool ofxKinect::init(bool setUseTexture){
 	depthPixelsBack = new unsigned short[length];
 	distancePixels = new float[length];
 
-	rgbPixels = new unsigned char[length*3];
-	rgbPixelsBack = new unsigned char[length*3];
-	calibratedRGBPixels = new unsigned char[length*3];
+	videoPixels = new unsigned char[length*bytespp];
+	videoPixelsBack = new unsigned char[length*bytespp];
+	calibratedRGBPixels = new unsigned char[length*bytespp];
 	
 	memset(depthPixels, 0, length*sizeof(unsigned char));
 	memset(depthPixelsRaw, 0, length*sizeof(unsigned short));
 	memset(depthPixelsBack, 0, length*sizeof(unsigned short));
 	memset(distancePixels, 0, length*sizeof(float));
 
-	memset(rgbPixels, 0, length*3*sizeof(unsigned char));
-	memset(rgbPixelsBack, 0, length*3*sizeof(unsigned char));
+	memset(videoPixels, 0, length*bytespp*sizeof(unsigned char));
+	memset(videoPixelsBack, 0, length*bytespp*sizeof(unsigned char));
 
 	if(bUseTexture){
 		depthTex.allocate(width, height, GL_LUMINANCE);
-		rgbTex.allocate(width, height, GL_RGB);
+		videoTex.allocate(width, height, infrared?GL_LUMINANCE:GL_RGB);
 	}
 
 	bGrabberInited = true;
@@ -219,12 +263,12 @@ void ofxKinect::clear(){
 		delete[] depthPixelsBack; depthPixelsBack = NULL;
 		delete[] distancePixels; distancePixels = NULL;
 
-		delete[] rgbPixels; rgbPixels = NULL;
-		delete[] rgbPixelsBack; rgbPixelsBack = NULL;
+		delete[] videoPixels; videoPixels = NULL;
+		delete[] videoPixelsBack; videoPixelsBack = NULL;
 	}
 
 	depthTex.clear();
-	rgbTex.clear();
+	videoTex.clear();
 
 	bGrabberInited = false;
 }
@@ -243,45 +287,20 @@ void ofxKinect::update(){
 
 	if ( this->lock() ) {
 
-		for (int k = 0; k < width*height; k++){
-			// ignore null pixels
-			if(depthPixelsBack[k] == 2047) {
-				distancePixels[k] = 0;
-				depthPixels[k] = 0;
-			} else {
-				// using equation from https://github.com/OpenKinect/openkinect/wiki/Imaging-Information
-				distancePixels[k] = 100.f / (-0.00307f * depthPixelsBack[k] + 3.33f);
-
-			if(bDepthNearValueWhite){
-			
-//TODO: remove this - why are we doing background thresholding here? we should be providing the actual data.
-//ANSWER: because you can't catch these values after they've been interpolated ...
-
-				// filter out the noisey values above 1024
-				if(depthPixelsBack[k] < 1024) {
-					//invert and convert to 8 bit
-					depthPixels[k] = (float) (2048 * 256) / (depthPixelsBack[k] - 2048);
-					}
-					else {
-						depthPixels[k] = 0;
-					}
-				}
-				else {
-					// convert to 8 bit
-					depthPixels[k] = (float) (2048 * 256) / (2048 - depthPixelsBack[k]);
-				}
+		int n = width * height;
+		if(bDepthNearValueWhite) {
+			for(int i = 0; i < n; i++){
+				distancePixels[i] = distancePixelsLookup[depthPixelsBack[i]];
+				depthPixels[i] = depthPixelsLookupNearWhite[depthPixelsBack[i]];
+			}
+		} else {
+			for(int i = 0; i < n; i++){
+				distancePixels[i] = distancePixelsLookup[depthPixelsBack[i]];
+				depthPixels[i] = depthPixelsLookupFarWhite[depthPixelsBack[i]];
 			}
 		}
-		memcpy(rgbPixels, rgbPixelsBack, width*height*3);
-			
-		if( bTiltNeedsApplying ){
-			//TODO: find out why this hangs. it is the libusb_control_transfer call that hangs.
-			//it seems to only hang when the camera is running
-			//maybe we need to pause the grabbing stream?
-			
-			//freenect_set_tilt_in_degrees(kinectDevice, targetTiltAngleDeg);
-			bTiltNeedsApplying = false;
-		}		
+		
+		memcpy(videoPixels, videoPixelsBack, n * bytespp);
 
 		//we have done the update
 		bNeedsUpdate = false;
@@ -291,7 +310,7 @@ void ofxKinect::update(){
 
 	if(bUseTexture){
 		depthTex.loadData(depthPixels, width, height, GL_LUMINANCE);
-		rgbTex.loadData(rgbPixelsBack, width, height, GL_RGB);
+		videoTex.loadData(videoPixelsBack, width, height, bInfrared?GL_LUMINANCE:GL_RGB);
 		bUpdateTex = false;
 	}
 }
@@ -308,12 +327,29 @@ float ofxKinect::getDistanceAt(const ofPoint & p) {
 }
 
 //------------------------------------
+ofxPoint3f ofxKinect::getWorldCoordinateFor(int x, int y) {
+	//Based on http://graphics.stanford.edu/~mdfisher/Kinect.html
+	static const double fx_d = 1.0 / 5.9421434211923247e+02;
+	static const double fy_d = 1.0 / 5.9104053696870778e+02;
+	static const double cx_d = 3.3930780975300314e+02;
+	static const double cy_d = 2.4273913761751615e+02;
+	
+	ofxVec3f result;
+	const double depth = getDistanceAt(x,y)/100.0;
+	result.x = float((x - cx_d) * depth * fx_d);
+	result.y = float((y - cy_d) * depth * fy_d);
+	result.z = depth;
+	
+	return result;	
+}
+
+//------------------------------------
 ofColor	ofxKinect::getColorAt(int x, int y) {
 	int index = (y * width + x) * 3;
 	ofColor c;
-	c.r = rgbPixels[index++];
-	c.g = rgbPixels[index++];
-	c.b = rgbPixels[index];
+	c.r = videoPixels[index++];
+	c.g = videoPixels[index++];
+	c.b = videoPixels[index];
 	c.a = 255;
 
 	return c;
@@ -355,7 +391,7 @@ void ofxKinect::setUseTexture(bool bUse){
 //----------------------------------------------------------
 void ofxKinect::draw(float _x, float _y, float _w, float _h){
 	if(bUseTexture) {
-		rgbTex.draw(_x, _y, _w, _h);
+		videoTex.draw(_x, _y, _w, _h);
 	}
 }
 
@@ -412,7 +448,7 @@ bool ofxKinect::isDepthNearValueWhite(){
 void ofxKinect::grabDepthFrame(freenect_device *dev, void *depth, uint32_t timestamp) {
 	if (thisKinect->lock()) {
 		try {
-			memcpy(thisKinect->depthPixelsBack, depth, width*height*sizeof(uint16_t));
+			memcpy(thisKinect->depthPixelsBack, depth, FREENECT_DEPTH_11BIT_SIZE);
 			thisKinect->bNeedsUpdate = true;
 		}
 		catch(...) {
@@ -425,10 +461,10 @@ void ofxKinect::grabDepthFrame(freenect_device *dev, void *depth, uint32_t times
 }
 
 //---------------------------------------------------------------------------
-void ofxKinect::grabRgbFrame(freenect_device *dev, freenect_pixel *rgb, uint32_t timestamp) {
+void ofxKinect::grabRgbFrame(freenect_device *dev, void *rgb, uint32_t timestamp) {
 	if (thisKinect->lock()) {
 		try {
-			memcpy(thisKinect->rgbPixelsBack, rgb, FREENECT_RGB_SIZE);
+			memcpy(thisKinect->videoPixelsBack, rgb, thisKinect->bInfrared?FREENECT_VIDEO_IR_8BIT_SIZE:FREENECT_VIDEO_RGB_SIZE);
 			thisKinect->bNeedsUpdate = true;
 		}
 		catch (...) {
@@ -442,53 +478,49 @@ void ofxKinect::grabRgbFrame(freenect_device *dev, freenect_pixel *rgb, uint32_t
 
 //---------------------------------------------------------------------------
 void ofxKinect::threadedFunction(){	
-	if (freenect_init(&kinectContext, NULL) < 0) {
-		ofLog(OF_LOG_ERROR, "ofxKinect: freenet_init failed");
-	}
 
-	int number_devices = freenect_num_devices(kinectContext);
-	ofLog(OF_LOG_VERBOSE, "ofxKinect: Number of Devices found: " + ofToString(number_devices));
-
-	if (number_devices < 1) {
-		ofLog(OF_LOG_ERROR, "ofxKinect: Did not find a device");
-		return;
-	}
-	
-	if (freenect_open_device(kinectContext, &kinectDevice, 0) < 0) {
-		ofLog(OF_LOG_ERROR, "ofxKinect: Could not open device");
-		return;
-	}
 	
 	freenect_set_led(kinectDevice, LED_GREEN);
+	freenect_set_video_format(kinectDevice, bInfrared?FREENECT_VIDEO_IR_8BIT:FREENECT_VIDEO_RGB);
+	freenect_set_depth_format(kinectDevice, FREENECT_DEPTH_11BIT);
 	freenect_set_depth_callback(kinectDevice, &grabDepthFrame);
-	freenect_set_rgb_callback(kinectDevice, &grabRgbFrame);
-	freenect_set_rgb_format(kinectDevice, FREENECT_FORMAT_RGB);
-	freenect_set_depth_format(kinectDevice, FREENECT_FORMAT_11_BIT);
+	freenect_set_video_callback(kinectDevice, &grabRgbFrame);
 	
 	ofLog(OF_LOG_VERBOSE, "ofxKinect: Connection opened");
-	
+
 	freenect_start_depth(kinectDevice);
-	freenect_start_rgb(kinectDevice);
+	freenect_start_video(kinectDevice);
 	
 	while (isThreadRunning()) {
-		int16_t ax,ay,az;
-		freenect_get_raw_accel(kinectDevice, &ax, &ay, &az);
-		rawAccel.set(ax, ay, az);
+		if( bTiltNeedsApplying ){
+
+			freenect_set_tilt_degs(kinectDevice, targetTiltAngleDeg);
+			bTiltNeedsApplying = false;
+		}
+
+		freenect_update_tilt_state(kinectDevice);
+		freenect_raw_tilt_state * tilt = freenect_get_tilt_state(kinectDevice);
+
+		rawAccel.set(tilt->accelerometer_x, tilt->accelerometer_y, tilt->accelerometer_z);
 		
 		double dx,dy,dz;
-		freenect_get_mks_accel(kinectDevice, &dx, &dy, &dz);
+		freenect_get_mks_accel(tilt, &dx, &dy, &dz);
 		mksAccel.set(dx, dy, dz);
 		
+		ofSleepMillis(20);
+
 //		printf("\r raw acceleration: %4d %4d %4d  mks acceleration: %4f %4f %4f", ax, ay, az, dx, dy, dz);
 	}
 
 //TODO: uncomment these when they are implemented in freenect	
-//	freenect_stop_depth(kinectDevice);
-//	freenect_stop_rgb(kinectDevice);
+	freenect_set_tilt_degs(kinectDevice, 0);
+	freenect_update_tilt_state(kinectDevice);
+	freenect_stop_depth(kinectDevice);
+	freenect_stop_video(kinectDevice);
 	freenect_set_led(kinectDevice, LED_YELLOW);
 
-//	freenect_close_device(kinectDevice);
-//	freenect_shutdown(kinectContext);
+	freenect_close_device(kinectDevice);
+	freenect_shutdown(kinectContext);
 	
 	ofLog(OF_LOG_VERBOSE, "ofxKinect: Connection closed");
 }
