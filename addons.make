@@ -1,0 +1,3 @@
+ofxThread
+ofxOpenCv
+ofxVectorMath

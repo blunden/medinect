@@ -4,6 +4,7 @@ obj/Release/addons/ofxVectorMath/src/ofxQuaternion.d \
  ../../../addons/ofxVectorMath/src/ofxQuaternion.h \
  ../../../addons/ofxVectorMath/src/ofxVec3f.h \
  ../../../libs/openFrameworks/utils/ofConstants.h \
+ ../../../libs/glee/include/GLee.h \
  ../../../libs/openFrameworks/utils/ofTypes.h \
  ../../../libs/openFrameworks/utils/ofConstants.h \
  ../../../libs/openFrameworks/utils/ofUtils.h \
@@ -15,6 +16,8 @@ obj/Release/addons/ofxVectorMath/src/ofxQuaternion.d \
 ../../../addons/ofxVectorMath/src/ofxVec3f.h:
 
 ../../../libs/openFrameworks/utils/ofConstants.h:
+
+../../../libs/glee/include/GLee.h:
 
 ../../../libs/openFrameworks/utils/ofTypes.h:
 

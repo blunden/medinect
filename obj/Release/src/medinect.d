@@ -1,28 +1,13 @@
-obj/Release/src/ofxKinect/src/ofxKinect.d \
- obj/Release/src/ofxKinect/src/ofxKinect.o: \
- src/ofxKinect/src/ofxKinect.cpp src/ofxKinect/src/ofxKinect.h \
+obj/Release/src/medinect.d obj/Release/src/medinect.o: src/medinect.cpp \
+ src/medinect.h ../../../libs/openFrameworks/ofMain.h \
  ../../../libs/openFrameworks/utils/ofConstants.h \
  ../../../libs/glee/include/GLee.h \
- ../../../libs/openFrameworks/graphics/ofTexture.h \
- ../../../libs/openFrameworks/graphics/ofGraphics.h \
- ../../../libs/openFrameworks/utils/ofTypes.h \
- ../../../libs/openFrameworks/utils/ofConstants.h \
- ../../../libs/openFrameworks/utils/ofUtils.h \
- ../../../libs/openFrameworks/graphics/ofGraphics.h \
- ../../../addons/ofxThread/src/ofxThread.h \
- ../../../addons/ofxVectorMath/src/ofxVectorMath.h \
- ../../../addons/ofxVectorMath/src/ofxVec2f.h \
- ../../../addons/ofxVectorMath/src/ofxVec3f.h \
- ../../../addons/ofxVectorMath/src/ofxVec4f.h \
- ../../../addons/ofxVectorMath/src/ofxMatrix3x3.h \
- ../../../addons/ofxVectorMath/src/ofxMatrix4x4.h \
- ../../../addons/ofxVectorMath/src/ofxQuaternion.h \
- /usr/include/libusb-1.0/libusb.h \
- /usr/local/include/libfreenect/libfreenect.h \
- ../../../libs/openFrameworks/ofMain.h \
  ../../../libs/openFrameworks/utils/ofMath.h \
+ ../../../libs/openFrameworks/utils/ofConstants.h \
  ../../../libs/openFrameworks/utils/ofTypes.h \
  ../../../libs/openFrameworks/utils/ofUtils.h \
+ ../../../libs/openFrameworks/utils/ofUtils.h \
+ ../../../libs/openFrameworks/utils/ofTypes.h \
  ../../../libs/openFrameworks/communication/ofSerial.h \
  ../../../libs/openFrameworks/communication/ofArduino.h \
  ../../../libs/openFrameworks/events/ofEvents.h \
@@ -63,7 +48,10 @@ obj/Release/src/ofxKinect/src/ofxKinect.d \
  ../../../libs/poco/include/Poco/Expire.h \
  ../../../libs/poco/include/Poco/Timestamp.h \
  ../../../libs/openFrameworks/communication/ofSerial.h \
+ ../../../libs/openFrameworks/graphics/ofTexture.h \
+ ../../../libs/openFrameworks/graphics/ofGraphics.h \
  ../../../libs/openFrameworks/graphics/ofTrueTypeFont.h \
+ ../../../libs/openFrameworks/graphics/ofGraphics.h \
  ../../../libs/openFrameworks/graphics/ofImage.h \
  ../../../libs/openFrameworks/graphics/ofTexture.h \
  ../../../libs/openFrameworks/app/ofAppRunner.h \
@@ -216,53 +204,55 @@ obj/Release/src/ofxKinect/src/ofxKinect.d \
  /usr/include/gstreamer-0.10/gst/gstparse.h \
  /usr/include/gstreamer-0.10/gst/gstxml.h \
  /usr/include/gstreamer-0.10/gst/gstcompat.h \
- ../../../libs/openFrameworks/video/ofVideoPlayer.h
+ ../../../libs/openFrameworks/video/ofVideoPlayer.h \
+ ../../../addons/ofxOpenCv/src/ofxOpenCv.h \
+ ../../../addons/ofxOpenCv/src/ofxCvConstants.h \
+ ../../../addons/ofxOpenCv/libs/opencv/include/cv.h \
+ ../../../addons/ofxOpenCv/libs/opencv/include/cxcore.h \
+ ../../../addons/ofxOpenCv/libs/opencv/include/cxtypes.h \
+ ../../../addons/ofxOpenCv/libs/opencv/include/cxerror.h \
+ ../../../addons/ofxOpenCv/libs/opencv/include/cvver.h \
+ ../../../addons/ofxOpenCv/libs/opencv/include/cxcore.hpp \
+ ../../../addons/ofxOpenCv/libs/opencv/include/cvtypes.h \
+ ../../../addons/ofxOpenCv/libs/opencv/include/cv.hpp \
+ ../../../addons/ofxOpenCv/libs/opencv/include/cvcompat.h \
+ ../../../addons/ofxOpenCv/src/ofxCvImage.h \
+ ../../../addons/ofxOpenCv/src/ofxCvGrayscaleImage.h \
+ ../../../addons/ofxOpenCv/src/ofxCvBlob.h \
+ ../../../addons/ofxOpenCv/src/ofxCvColorImage.h \
+ ../../../addons/ofxOpenCv/src/ofxCvFloatImage.h \
+ ../../../addons/ofxOpenCv/src/ofxCvShortImage.h \
+ ../../../addons/ofxOpenCv/src/ofxCvContourFinder.h \
+ src//ofxKinect/src/ofxKinect.h ../../../addons/ofxThread/src/ofxThread.h \
+ ../../../addons/ofxVectorMath/src/ofxVectorMath.h \
+ ../../../addons/ofxVectorMath/src/ofxVec2f.h \
+ ../../../addons/ofxVectorMath/src/ofxVec3f.h \
+ ../../../addons/ofxVectorMath/src/ofxVec4f.h \
+ ../../../addons/ofxVectorMath/src/ofxMatrix3x3.h \
+ ../../../addons/ofxVectorMath/src/ofxMatrix4x4.h \
+ ../../../addons/ofxVectorMath/src/ofxQuaternion.h \
+ /usr/include/libusb-1.0/libusb.h \
+ /usr/local/include/libfreenect/libfreenect.h
 
-src/ofxKinect/src/ofxKinect.h:
+src/medinect.h:
+
+../../../libs/openFrameworks/ofMain.h:
 
 ../../../libs/openFrameworks/utils/ofConstants.h:
 
 ../../../libs/glee/include/GLee.h:
 
-../../../libs/openFrameworks/graphics/ofTexture.h:
-
-../../../libs/openFrameworks/graphics/ofGraphics.h:
-
-../../../libs/openFrameworks/utils/ofTypes.h:
+../../../libs/openFrameworks/utils/ofMath.h:
 
 ../../../libs/openFrameworks/utils/ofConstants.h:
 
-../../../libs/openFrameworks/utils/ofUtils.h:
-
-../../../libs/openFrameworks/graphics/ofGraphics.h:
-
-../../../addons/ofxThread/src/ofxThread.h:
-
-../../../addons/ofxVectorMath/src/ofxVectorMath.h:
-
-../../../addons/ofxVectorMath/src/ofxVec2f.h:
-
-../../../addons/ofxVectorMath/src/ofxVec3f.h:
-
-../../../addons/ofxVectorMath/src/ofxVec4f.h:
-
-../../../addons/ofxVectorMath/src/ofxMatrix3x3.h:
-
-../../../addons/ofxVectorMath/src/ofxMatrix4x4.h:
-
-../../../addons/ofxVectorMath/src/ofxQuaternion.h:
-
-/usr/include/libusb-1.0/libusb.h:
-
-/usr/local/include/libfreenect/libfreenect.h:
-
-../../../libs/openFrameworks/ofMain.h:
-
-../../../libs/openFrameworks/utils/ofMath.h:
-
 ../../../libs/openFrameworks/utils/ofTypes.h:
 
 ../../../libs/openFrameworks/utils/ofUtils.h:
+
+../../../libs/openFrameworks/utils/ofUtils.h:
+
+../../../libs/openFrameworks/utils/ofTypes.h:
 
 ../../../libs/openFrameworks/communication/ofSerial.h:
 
@@ -344,7 +334,13 @@ src/ofxKinect/src/ofxKinect.h:
 
 ../../../libs/openFrameworks/communication/ofSerial.h:
 
+../../../libs/openFrameworks/graphics/ofTexture.h:
+
+../../../libs/openFrameworks/graphics/ofGraphics.h:
+
 ../../../libs/openFrameworks/graphics/ofTrueTypeFont.h:
+
+../../../libs/openFrameworks/graphics/ofGraphics.h:
 
 ../../../libs/openFrameworks/graphics/ofImage.h:
 
@@ -691,3 +687,61 @@ src/ofxKinect/src/ofxKinect.h:
 /usr/include/gstreamer-0.10/gst/gstcompat.h:
 
 ../../../libs/openFrameworks/video/ofVideoPlayer.h:
+
+../../../addons/ofxOpenCv/src/ofxOpenCv.h:
+
+../../../addons/ofxOpenCv/src/ofxCvConstants.h:
+
+../../../addons/ofxOpenCv/libs/opencv/include/cv.h:
+
+../../../addons/ofxOpenCv/libs/opencv/include/cxcore.h:
+
+../../../addons/ofxOpenCv/libs/opencv/include/cxtypes.h:
+
+../../../addons/ofxOpenCv/libs/opencv/include/cxerror.h:
+
+../../../addons/ofxOpenCv/libs/opencv/include/cvver.h:
+
+../../../addons/ofxOpenCv/libs/opencv/include/cxcore.hpp:
+
+../../../addons/ofxOpenCv/libs/opencv/include/cvtypes.h:
+
+../../../addons/ofxOpenCv/libs/opencv/include/cv.hpp:
+
+../../../addons/ofxOpenCv/libs/opencv/include/cvcompat.h:
+
+../../../addons/ofxOpenCv/src/ofxCvImage.h:
+
+../../../addons/ofxOpenCv/src/ofxCvGrayscaleImage.h:
+
+../../../addons/ofxOpenCv/src/ofxCvBlob.h:
+
+../../../addons/ofxOpenCv/src/ofxCvColorImage.h:
+
+../../../addons/ofxOpenCv/src/ofxCvFloatImage.h:
+
+../../../addons/ofxOpenCv/src/ofxCvShortImage.h:
+
+../../../addons/ofxOpenCv/src/ofxCvContourFinder.h:
+
+src//ofxKinect/src/ofxKinect.h:
+
+../../../addons/ofxThread/src/ofxThread.h:
+
+../../../addons/ofxVectorMath/src/ofxVectorMath.h:
+
+../../../addons/ofxVectorMath/src/ofxVec2f.h:
+
+../../../addons/ofxVectorMath/src/ofxVec3f.h:
+
+../../../addons/ofxVectorMath/src/ofxVec4f.h:
+
+../../../addons/ofxVectorMath/src/ofxMatrix3x3.h:
+
+../../../addons/ofxVectorMath/src/ofxMatrix4x4.h:
+
+../../../addons/ofxVectorMath/src/ofxQuaternion.h:
+
+/usr/include/libusb-1.0/libusb.h:
+
+/usr/local/include/libfreenect/libfreenect.h:

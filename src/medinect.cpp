@@ -1,6 +1,6 @@
-#include "medical.h"
+#include "medinect.h"
 
-void medical::setup()
+void medinect::setup()
 {
 	kinect.init();
 	kinect.setVerbose(true);
@@ -21,7 +21,7 @@ void medical::setup()
 	ofSetFrameRate(40);
 }
 
-void medical::update()
+void medinect::update()
 {
 	ofBackground(100, 100, 100);
 	kinect.update();
@@ -41,7 +41,7 @@ void medical::update()
 	contourFinder.findContours(grayImage, 10, 28500, 27500, true);
 }
 
-void medical::draw()
+void medinect::draw()
 {
 	ofSetColor(255, 255, 255);
 	kinect.drawDepth(10, 10, 400, 300);
@@ -63,17 +63,17 @@ void medical::draw()
 	contourFinder.draw(420, 320, 400, 300);
 }
 
-void medical::exit()
+void medinect::exit()
 {
 	kinect.close();
 }
 
-void medical::windowResized(int w, int h)
+void medinect::windowResized(int w, int h)
 {
 	
 }
 
-void medical::keyPressed(int key)
+void medinect::keyPressed(int key)
 {
 	cout << key << " has been pressed.\n";
 	switch (key)

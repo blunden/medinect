@@ -1,12 +1,12 @@
-#ifndef _MEDICAL
-#define _MEDICAL
+#ifndef _MEDINECT
+#define _MEDINECT
 
-#include "openFrameworks/ofMain.h"
+#include "ofMain.h"
 
 #include "ofxOpenCv.h"
 #include "ofxKinect.h"
 
-class medical : public ofBaseApp
+class medinect : public ofBaseApp
 {
 	public:
 		void setup();
