@@ -19,6 +19,8 @@ void medical::setup()
 	imageDisplayNumber = 0;
 	
 	ofSetFrameRate(40);
+
+	verdana.loadFont("verdana.ttf", 20);
 }
 
 void medical::update()
@@ -27,6 +29,7 @@ void medical::update()
 	kinect.update();
 
 	grayImage.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
+	grayImage.mirror(false, true);
 	
 	grayThreshFar = grayImage;
 	grayThresh = grayImage;
@@ -50,7 +53,8 @@ void medical::draw()
 	if (contourFinder.blobs.size() >= 1)
 	{
 		ofxCvBlob &blob = contourFinder.blobs[0];
-		ofCircle(blob.boundingRect.x, blob.boundingRect.y, 50);
+		ofCircle(blob.boundingRect.x, blob.boundingRect.y, 10);
+		verdana.drawString("X: " + ofToString(blob.boundingRect.y, 2) + ", Y: " + ofToString(blob.boundingRect.y, 2), 700, 400);
 	}
 	
 	switch (imageDisplayNumber)
@@ -65,7 +69,7 @@ void medical::draw()
 			break;
 	}
 	
-	grayImage.draw(500, 20, 400, 300);
+	grayImage.draw(700, 20, 400, 300);
 //	contourFinder.draw(420, 320, 400, 300);
 }
 

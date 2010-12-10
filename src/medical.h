@@ -30,6 +30,8 @@ class medical : public ofBaseApp
 		
 		ofImage image1;
 		ofImage image2;
+		
+		ofTrueTypeFont verdana;
 	
 	private:
 	
