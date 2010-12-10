@@ -44,8 +44,14 @@ void medical::update()
 void medical::draw()
 {
 	ofSetColor(255, 255, 255);
-	kinect.drawDepth(10, 10, 400, 300);
-	kinect.draw(420, 10, 400, 300);
+//	kinect.drawDepth(10, 10, 400, 300);
+//	kinect.draw(420, 10, 400, 300);
+	
+	if (contourFinder.blobs.size() >= 1)
+	{
+		ofxCvBlob &blob = contourFinder.blobs[0];
+		ofCircle(blob.boundingRect.x, blob.boundingRect.y, 50);
+	}
 	
 	switch (imageDisplayNumber)
 	{
@@ -59,8 +65,8 @@ void medical::draw()
 			break;
 	}
 	
-	grayImage.draw(420, 320, 400, 300);
-	contourFinder.draw(420, 320, 400, 300);
+	grayImage.draw(500, 20, 400, 300);
+//	contourFinder.draw(420, 320, 400, 300);
 }
 
 void medical::exit()
