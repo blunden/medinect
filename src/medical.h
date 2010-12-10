@@ -1,7 +1,7 @@
 #ifndef _MEDICAL
 #define _MEDICAL
 
-#include "openFrameworks/ofMain.h"
+#include "ofMain.h"
 
 #include "ofxOpenCv.h"
 #include "ofxKinect.h"

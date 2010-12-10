@@ -85,7 +85,7 @@ void medical::windowResized(int w, int h)
 
 void medical::keyPressed(int key)
 {
-	cout << key << " has been pressed.\n";
+	cout << key << " h as been pressed.\n";
 	switch (key)
 	{
 		case 49:
