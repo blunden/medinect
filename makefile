@@ -27,7 +27,7 @@
 
 COMPILER_OPTIMIZATION = -march=native -mtune=native -O3 -finline-functions -funroll-all-loops -funroll-loops -fomit-frame-pointer -ffast-math -ftree-vectorize -fopenmp
 EXCLUDE_FROM_SOURCE="bin,.xcodeproj,obj"
-USER_CFLAGS = -I/usr/include/libusb-1.0 -I src/ofxKinect/src -I/usr/local/include/libfreenect
+USER_CFLAGS = -I/usr/include/libusb-1.0 -I src/ofxKinect/src -pthread -I/usr/include/gstreamer-0.10 -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/libxml2  -pthread -lgstreamer-0.10 -lgobject-2.0 -lgmodule-2.0 -lxml2 -lgthread-2.0 -lrt -lglib-2.0
 USER_LD_FLAGS = -lusb-1.0
 USER_LIBS = 
 OTHER_ADDONS_PATH = src/

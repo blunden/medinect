@@ -1,4 +1,3 @@
 ofxThread
 ofxOpenCv
-ofxXmlSettings
 ofxVectorMath

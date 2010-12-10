@@ -46,13 +46,7 @@ int freenect_init(freenect_context **ctx, freenect_usb_context *usb_ctx)
 
 int freenect_shutdown(freenect_context *ctx)
 {
-	while (ctx->first) {
-		FN_NOTICE("Device %p open during shutdown, closing...\n", ctx->first);
-		freenect_close_device(ctx->first);
-	}
-
-	fnusb_shutdown(&ctx->usb);
-	free(ctx);
+	FN_ERROR("%s NOT IMPLEMENTED YET\n", __FUNCTION__);
 	return 0;
 }
 
@@ -76,7 +70,7 @@ int freenect_num_devices(freenect_context *ctx)
 		int r = libusb_get_device_descriptor (devs[i], &desc);
 		if (r < 0)
 			continue;
-		if (desc.idVendor == VID_MICROSOFT && desc.idProduct == PID_NUI_CAMERA)
+		if (desc.idVendor == MS_MAGIC_VENDOR && desc.idProduct == MS_MAGIC_CAMERA_PRODUCT)
 			nr++;
 	}
 
@@ -101,55 +95,16 @@ int freenect_open_device(freenect_context *ctx, freenect_device **dev, int index
 	if (res < 0) {
 		free(pdev);
 		return res;
-	}
-
-	if (!ctx->first) {
-		ctx->first = pdev;
 	} else {
-		freenect_device *prev = ctx->first;
-		while (prev->next)
-			prev = prev->next;
-		prev->next = pdev;
+		*dev = pdev;
+		return 0;
 	}
-
-	*dev = pdev;
-	return 0;
 }
 
 int freenect_close_device(freenect_device *dev)
 {
 	freenect_context *ctx = dev->parent;
-	int res;
-
-	// stop streams, if active
-	freenect_stop_depth(dev);
-	freenect_stop_video(dev);
-
-	res = fnusb_close_subdevices(dev);
-	if (res < 0) {
-		FN_ERROR("fnusb_close_subdevices failed: %d\n", res);
-		return res;
-	}
-
-	freenect_device *last = NULL;
-	freenect_device *cur = ctx->first;
-
-	while (cur && cur != dev) {
-		last = cur;
-		cur = cur->next;
-	}
-
-	if (!cur) {
-		FN_ERROR("device %p not found in linked list for this context!\n", dev);
-		return -1;
-	}
-
-	if (last)
-		last->next = cur->next;
-	else
-		ctx->first = cur->next;
-
-	free(dev);
+	FN_ERROR("%s NOT IMPLEMENTED YET\n", __FUNCTION__);
 	return 0;
 }
 
@@ -195,3 +150,4 @@ void fn_log(freenect_context *ctx, freenect_loglevel level, const char *fmt, ...
 		va_end(ap);
 	}
 }
+
