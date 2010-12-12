@@ -1,3 +1,4 @@
 ofxThread
 ofxOpenCv
 ofxVectorMath
+ofxKinect

@@ -1,7 +1,7 @@
 #ifndef _MEDICAL
 #define _MEDICAL
 
-#include "openFrameworks/ofMain.h"
+#include "ofMain.h"
 
 #include "ofxOpenCv.h"
 #include "ofxKinect.h"
@@ -19,14 +19,23 @@ class medical : public ofBaseApp
 		
 		ofxKinect kinect;
 		
-		ofxCvContourFinder	contourFinder;
+		ofxCvContourFinder	gestureFinder;
 		
-		ofxCvGrayscaleImage	grayImage;
-		ofxCvGrayscaleImage	grayThresh;
-		ofxCvGrayscaleImage	grayThreshFar;
+		ofxCvGrayscaleImage	gestureImage;
+		ofxCvGrayscaleImage	gestureThresh;
+		ofxCvGrayscaleImage	gestureThreshFar;
+
+		ofxCvContourFinder	activationFinder;
+
+		ofxCvGrayscaleImage	activationImage;
+		ofxCvGrayscaleImage	activationThresh;
+		ofxCvGrayscaleImage	activationThreshFar;
 		
-		int	nearThreshold;
-		int	farThreshold;
+		int	nearGestureThreshold;
+		int	farGestureThreshold;
+
+		int	nearActivationThreshold;
+		int	farActivationThreshold;
 		
 		ofImage image1;
 		ofImage image2;
@@ -36,6 +45,13 @@ class medical : public ofBaseApp
 	private:
 	
 		int imageDisplayNumber;
+		int startX;
+		int startY;
+		int lastX;
+		int lastY;
+
+		bool inYMode;
+		bool inActivationMode;
 };
 
 #endif

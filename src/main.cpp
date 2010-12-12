@@ -1,4 +1,4 @@
-#include "openFrameworks/ofMain.h"
+#include "ofMain.h"
 #include "medical.h"
 #include "ofAppGlutWindow.h"
 
