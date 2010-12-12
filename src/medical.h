@@ -43,6 +43,8 @@ class medical : public ofBaseApp
 		ofTrueTypeFont verdana;
 	
 	private:
+
+		void calculateFramerate();
 	
 		int imageDisplayNumber;
 		int startX;
@@ -50,8 +52,15 @@ class medical : public ofBaseApp
 		int lastX;
 		int lastY;
 
+		int angle;
+
 		bool inYMode;
 		bool inActivationMode;
+		
+		char buf[255];
+		float myTimeNow, myTimeThen, myFramerate;
+		float myFPS;
+		float myFrames;
 };
 
 #endif

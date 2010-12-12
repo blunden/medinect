@@ -10,26 +10,32 @@ void medical::setup()
 	gestureThresh.allocate(kinect.width, kinect.height);
 	gestureThreshFar.allocate(kinect.width, kinect.height);
 
-//	activationImage.allocate(kinect.width, kinect.height);
-//	activationThresh.allocate(kinect.width, kinect.height);
-//	activationThreshFar.allocate(kinect.width, kinect.height);
+	activationImage.allocate(kinect.width, kinect.height);
+	activationThresh.allocate(kinect.width, kinect.height);
+	activationThreshFar.allocate(kinect.width, kinect.height);
 	
 	farGestureThreshold = 150;	// The threshold for general gesture activation
 	nearGestureThreshold = 130;
 
-//	farActivationThreshold = 129;	// The threshold for the activation gestures
-//	nearActivationThreshold = 120;
+	farActivationThreshold = 129;	// The threshold for the activation gestures
+	nearActivationThreshold = 120;
 	
 	imageDisplayNumber = 0;
 	
-	ofSetFrameRate(24);
+	ofSetFrameRate(60);
 
 	verdana.loadFont("verdana.ttf", 14);
 	
 	startX = 0;
 	startY = 0;
-//	lastX = 0;
-//	lastY = 0;
+	lastX = 0;
+	lastY = 0;
+	
+	myTimeThen = 0.0f;
+	myTimeNow = 0.0f;
+	myFramerate = 0.0f;
+	myFPS = 0.0f;
+	myFrames = 0.0f;
 
 	inYMode = false;
 }
@@ -54,39 +60,44 @@ void medical::update()
 
 	// --------------------
 
-//	activationImage.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
-//	activationImage.mirror(false, true),
+	activationImage.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
+	activationImage.mirror(false, true),
 	
-//	activationThreshFar = activationImage;
-//	activationThresh = activationImage;
-//	activationThreshFar.threshold(farActivationThreshold, true);
-//	activationThresh.threshold(nearActivationThreshold);
-//	cvAnd(activationThresh.getCvImage(), activationThreshFar.getCvImage(), activationImage.getCvImage(), NULL);
+	activationThreshFar = activationImage;
+	activationThresh = activationImage;
+	activationThreshFar.threshold(farActivationThreshold, true);
+	activationThresh.threshold(nearActivationThreshold);
+	cvAnd(activationThresh.getCvImage(), activationThreshFar.getCvImage(), activationImage.getCvImage(), NULL);
 
-//	activationImage.flagImageChanged();
+	activationImage.flagImageChanged();
 
-//	activationFinder.findContours(activationImage, 10, 28500, 27500, true);
+	activationFinder.findContours(activationImage, 10, 28500, 27500, true);
 }
 
 void medical::draw()
 {
 	ofSetColor(255, 255, 255);
+//	verdana.drawString("Framerate: " + ofToString(ofGetFrameRate()), 20, 50);
+	ofDrawBitmapString(buf, 20, 50);
 //	kinect.drawDepth(10, 10, 400, 300);
 //	kinect.draw(420, 10, 400, 300);
+
+	int x;
+	int y;
 	
 	if (gestureFinder.blobs.size() >= 1)
 	{
 		ofSetColor(0, 0, 255);
 		ofFill();
 		ofxCvBlob &blob = gestureFinder.blobs[0];
-		int x = blob.boundingRect.x;
-		int y = blob.boundingRect.y;
+		x = blob.centroid.x;
+		y = blob.centroid.y;
 		verdana.drawString("X: " + ofToString(x, 2) + ", Y: " + ofToString(y, 2), 20, 600);
 //		verdana.drawString("startX: " + ofToString(startX, 2) + ", startY: " + ofToString(startY, 2), 700, 650);
 		if ((y <= (startY + 40)) && (y >= (startY - 40)) 
 		    && (x <= (startX + 200)) && !inYMode) // They are still in the hover corridor
 		{
-			verdana.drawString("You are in the corridor!", 20, 500);
+//			verdana.drawString("You are in the corridor!", 20, 500);
 			ofSetColor(0, 255, 255);
 			if (x >= (startX + 120))
 			{
@@ -98,7 +109,7 @@ void medical::draw()
 		else if ((x <= (startX + 40)) && (x >= (startX - 40))
 			 && (y >= (startY - 150)) && inYMode) // They are in the y-hover corridor
 		{
-			verdana.drawString("In YMode!", 20, 500);
+//			verdana.drawString("In YMode!", 20, 500);
 			ofSetColor(255, 255, 0);
 			if (y <= (startY - 80))
 			{
@@ -109,39 +120,39 @@ void medical::draw()
 				lastY = y;
 			}
 		}
-		else if (inActivationMode && (gestureFinder.blobs.size() == 1)) // they are in the activation mode
+		else if (inActivationMode && (activationFinder.blobs.size() == 1)) // they are in the activation mode
 		{
-			int aX = gestureFinder.blobs[0].boundingRect.x; // activationFinder, changed for performance testing
-			int aY = gestureFinder.blobs[0].boundingRect.y;
-			verdana.drawString("You have FUCKED THE WIDGET!", 20, 500);
+			x = activationFinder.blobs[0].centroid.x; // activationFinder, changed for performance testing
+			y = activationFinder.blobs[0].centroid.y;
+//			verdana.drawString("You have FUCKED THE WIDGET!", 20, 500);
 			ofSetColor(107, 142, 35);
 			// We just need to ensure that the activation object is in roughly the same spot as the gesture object
-			if ((aX <= lastX + 100) && (aX >= lastX - 100) && (aY <= lastY + 100) && (aY >= lastY - 100))
+			if ((x <= lastX + 100) && (x >= lastX - 100) && (y <= lastY + 100) && (y >= lastY - 100))
 			{
 				ofSetColor(0, 255, 0);
-//				verdana.drawString("You have Activated the Widget!", 700, 600);
+				verdana.drawString("You have Activated the Widget!", 700, 600);
 			}
 		}
 		else // They exited the hover corridor
 		{
-			verdana.drawString("Exitting the corridor!", 20, 500);
+//			verdana.drawString("Exitting the corridor!", 20, 500);
 			ofSetColor(255, 0, 0);
 			startY = y;
 			startX = x;
 			inYMode = false;
 			inActivationMode = false;
 		}
+		calculateFramerate();
 		ofCircle(x, y, 10);
 	}
 	else
 	{
 		verdana.drawString("I Cannot See Your Hand!", 20, 20);
 	}
-	
 	if (inActivationMode && (gestureFinder.blobs.size() == 1))
 	{
-		int aX = gestureFinder.blobs[0].boundingRect.x; // activationFinder, changed for performance testing
-		int aY = gestureFinder.blobs[0].boundingRect.y;
+		int aX = activationFinder.blobs[0].centroid.x; // activationFinder, changed for performance testing
+		int aY = activationFinder.blobs[0].centroid.y;
 		int d = 100;
 		ofSetColor(107, 142, 35);
 		if ((aX <= lastX + d) && (aX >= lastX - d) && (aY <= lastY + d) && (aY >= lastY - d))
@@ -167,14 +178,29 @@ void medical::draw()
 	ofNoFill();
 	ofSetColor(255, 255, 255);
 	
-//	gestureImage.draw(700, 20, 400, 300);
-//	activationImage.draw(700, 320, 400, 300);
-//	contourFinder.draw(420, 320, 400, 300);
+	gestureImage.draw(700, 20, 400, 300);
+	activationImage.draw(700, 330, 400, 300);
+	gestureFinder.draw(700, 20, 400, 300);
+	activationFinder.draw(700, 330, 400, 300);
 }
 
 void medical::exit()
 {
 	kinect.close();
+}
+
+void medical::calculateFramerate()
+{
+	myTimeNow = ofGetElapsedTimef();
+	if ((myTimeNow - myTimeThen) > 0.05f || myFrames == 0)
+	{
+		myFPS = myFrames / (myTimeNow - myTimeThen);
+		myTimeThen = myTimeNow;
+		myFrames = 0;
+		myFramerate = 0.9f * myFramerate + 0.1f * myFPS;
+		sprintf(buf, "Framerate: %f", myFramerate);
+	}
+	++myFrames;
 }
 
 void medical::windowResized(int w, int h)
@@ -192,6 +218,18 @@ void medical::keyPressed(int key)
 			break;
 		case 50:
 			imageDisplayNumber = 2;
+			break;
+		case OF_KEY_UP:
+			++angle;
+			if (angle > 30) 
+				angle = 30;
+			kinect.setCameraTiltAngle(angle);
+			break;
+		case OF_KEY_DOWN:
+			--angle;
+			if (angle < -30)
+				angle = -30;
+			kinect.setCameraTiltAngle(angle);
 			break;
 		default:
 			break;
