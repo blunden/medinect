@@ -1,4 +1,5 @@
 #include "medical.h"
+#include "osc.h"
 
 void medical::setup()
 {
@@ -38,6 +39,8 @@ void medical::setup()
 	myFrames = 0.0f;
 
 	inYMode = false;
+
+	sender.osc_init("127.0.0.1", 4711);
 }
 
 void medical::update()

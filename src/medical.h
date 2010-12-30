@@ -5,6 +5,8 @@
 
 #include "ofxOpenCv.h"
 #include "ofxKinect.h"
+#include "ofxOsc.h"
+#include "osc.h"
 
 class medical : public ofBaseApp
 {
@@ -18,6 +20,7 @@ class medical : public ofBaseApp
 		void keyPressed(int key);
 		
 		ofxKinect kinect;
+		oscsend sender;
 		
 		ofxCvContourFinder	gestureFinder;
 		
