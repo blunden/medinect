@@ -44,6 +44,7 @@ void medical::setup()
 	myFrames = 0.0f;
 
 	inYMode = false;
+	activated = false;
 
 	this->dest_ip = "127.0.0.1"; //initialize to localhost
 	this->dest_port = 4711;
@@ -108,6 +109,11 @@ void medical::draw()
 		ofxCvBlob &blob = gestureFinder.blobs[0];
 		x = blob.centroid.x;
 		y = blob.centroid.y;
+		sender.send_cursor(x, y);
+		if (activated)
+		{
+			sender.send_stack(x, y, 0.0f, 4); // Sends the latest coords with dice-generated random number 4 for new pictur for new picturee.
+		}
 		verdana.drawString("X: " + ofToString(x, 2) + ", Y: " + ofToString(y, 2), 20, 600);
 //		verdana.drawString("startX: " + ofToString(startX, 2) + ", startY: " + ofToString(startY, 2), 700, 650);
 		if ((y <= (startY + 40)) && (y >= (startY - 40)) 
@@ -164,6 +170,7 @@ void medical::draw()
 	else
 	{
 		verdana.drawString("I Cannot See Your Hand!", 20, 20);
+		activated = false;
 	}
 	if (inActivationMode && (gestureFinder.blobs.size() == 1))
 	{
@@ -175,6 +182,7 @@ void medical::draw()
 		{
 			ofSetColor(0, 255, 0);
 			verdana.drawString("You have Activated the Widget!", 20, 500);
+			activated = true;
 		}
 		ofCircle(aX, aY, 10);
 	}

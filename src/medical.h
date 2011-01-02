@@ -65,6 +65,7 @@ class medical : public ofBaseApp
 
 		bool inYMode;
 		bool inActivationMode;
+		bool activated;
 		
 		char buf[255];
 		float myTimeNow, myTimeThen, myFramerate;
