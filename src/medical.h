@@ -7,10 +7,16 @@
 #include "ofxKinect.h"
 #include "ofxOsc.h"
 #include "osc.h"
+#include "ofxArgs.h"
 
 class medical : public ofBaseApp
 {
+	private:
+		ofxArgs* args;
+		string dest_ip;
+		int dest_port;
 	public:
+		medical(ofxArgs* args);
 		void setup();
 		void draw();
 		void update();

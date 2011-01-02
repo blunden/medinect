@@ -1,6 +1,11 @@
 #include "medical.h"
 #include "osc.h"
 
+medical::medical(ofxArgs* args) 
+{
+	this->args = args;
+}
+
 void medical::setup()
 {
 	kinect.init();
@@ -40,7 +45,15 @@ void medical::setup()
 
 	inYMode = false;
 
-	sender.osc_init("127.0.0.1", 4711);
+	this->dest_ip = "127.0.0.1"; //initialize to localhost
+	this->dest_port = 4711;
+
+	if((this->args->getString(0) != "") && (this->args->getCount() == 2)) { //no verification that this is an actual ip address
+		this->dest_ip = this->args->getString(0);
+		this->dest_port = this->args->getInt(1);
+	}
+
+	sender.osc_init(dest_ip, dest_port);
 }
 
 void medical::update()
