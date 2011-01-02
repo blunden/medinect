@@ -10,6 +10,10 @@ class oscsend
 		bool osc_initialized;
 
 		void osc_init(std::string, int);
-		void send_stack(int, float, float, float, int);
+		void send_stack(int, int, float, int);
+		void send_cursor(int, int);
+	
+	private:
+		int KINECT_ID;
 };
 #endif
