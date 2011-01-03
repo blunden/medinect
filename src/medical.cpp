@@ -1,5 +1,6 @@
 #include "medical.h"
 #include "osc.h"
+#include <iostream>
 
 medical::medical(ofxArgs* args) 
 {
@@ -47,13 +48,17 @@ void medical::setup()
 	activated = false;
 
 	this->dest_ip = "127.0.0.1"; //initialize to localhost
-	this->dest_port = 4711;
+	this->dest_port = 4711; //initialize to arbitrarily big number
 
-	if((this->args->getString(0) != "") && (this->args->getCount() == 2)) { //no verification that this is an actual ip address
-		this->dest_ip = this->args->getString(0);
-		this->dest_port = this->args->getInt(1);
+	if((this->args->getString(1) != "") && (this->args->getCount() == 3)) { //no verification that this is an actual ip address
+		this->dest_ip = this->args->getString(1);
+		this->dest_port = this->args->getInt(2);
 	}
-
+	else {
+		std::cout << "Usage: " << this->args->getString(0) << " <address>" << " <port>" << endl; 
+		std::cout << "Using default values" << endl;
+	}
+	std::cout << "Connecting to " << dest_ip << " on port " << dest_port << endl;
 	sender.osc_init(dest_ip, dest_port);
 }
 
