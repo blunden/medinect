@@ -71,6 +71,28 @@ class medical : public ofBaseApp
 		float myTimeNow, myTimeThen, myFramerate;
 		float myFPS;
 		float myFrames;
+		
+		//Hover Widget stuffs
+		int HW_FIRST_X;
+		int HW_FIRST_Y;
+		int HW_SPACE;
+		int HW_DISTANCE;
+		int HW_FIRST_LEG;
+		int HW_SECOND_LEG;
+		int HW_CURRENT_DIRECTION;
+		
+/*		int DIRECTION_UP;
+		int DIRECTION_DOWN;
+		int DIRECTION_LEFT;
+		int DIRECTION_RIGHT;
+		int DIRECTION_WAIT;*/
+		
+		bool isActivated;
+		float ZOOM;
+		int STACK;
+
+		void hoverWidget(int, int);
+		int inCorridor(int, int, int);
 };
 
 #endif

@@ -2,6 +2,12 @@
 #include "osc.h"
 #include <iostream>
 
+#define DIRECTION_UP 0
+#define DIRECTION_DOWN 1
+#define DIRECTION_LEFT 2
+#define DIRECTION_RIGHT 3
+#define DIRECTION_WAIT 0
+
 medical::medical(ofxArgs* args) 
 {
 	this->args = args;
@@ -47,6 +53,18 @@ void medical::setup()
 	inYMode = false;
 	activated = false;
 
+	HW_FIRST_X = 0;
+	HW_FIRST_Y = 0;
+	HW_SPACE = 40;
+	HW_DISTANCE = 150;
+	HW_FIRST_LEG = -1;
+	HW_SECOND_LEG = -1;
+	HW_CURRENT_DIRECTION = -1;
+
+	isActivated = false;
+	ZOOM = 0.5f;
+	STACK = 1;
+
 	this->dest_ip = "127.0.0.1"; //initialize to localhost
 	this->dest_port = 4711; //initialize to arbitrarily big number
 
@@ -60,6 +78,8 @@ void medical::setup()
 	}
 	std::cout << "Connecting to " << dest_ip << " on port " << dest_port << endl;
 	sender.osc_init(dest_ip, dest_port);
+
+	sender.send_stack(0, 0, ZOOM, STACK);
 }
 
 void medical::update()
@@ -98,7 +118,7 @@ void medical::update()
 
 void medical::draw()
 {
-	ofSetColor(255, 255, 255);
+//	ofSetColor(0, 0, 255);
 //	verdana.drawString("Framerate: " + ofToString(ofGetFrameRate()), 20, 50);
 	ofDrawBitmapString(buf, 20, 50);
 //	kinect.drawDepth(10, 10, 400, 300);
@@ -109,20 +129,36 @@ void medical::draw()
 	
 	if (gestureFinder.blobs.size() >= 1)
 	{
-		ofSetColor(0, 0, 255);
+//		ofSetColor(0, 0, 255);
 		ofFill();
 		ofxCvBlob &blob = gestureFinder.blobs[0];
 		x = blob.centroid.x;
 		y = blob.centroid.y;
-		sender.send_cursor(x, y);
-		if (activated)
+		if (!isActivated)
+			hoverWidget(x, y);
+		else
 		{
-			sender.send_stack(x, y, 0.0f, 4); // Sends the latest coords with dice-generated random number 4 for new pictur for new picturee.
+			if (HW_FIRST_LEG == DIRECTION_UP && HW_SECOND_LEG == DIRECTION_RIGHT)
+			{
+				sender.send_stack(x, y, ZOOM, STACK);
+				ofSetColor(255, 0, 255);
+			}
+			if (HW_FIRST_LEG == DIRECTION_DOWN && HW_SECOND_LEG == DIRECTION_LEFT)
+			{
+				sender.send_pen(sender.PEN_UNDO, x, y, 1, 1);
+				ofSetColor(0, 255, 0);
+			}
+		}
+		ofCircle(x, y, 10);
+//		sender.send_pen(sender.PEN_DOWN, x, y, 1, 1);
+/*		if (activated)
+		{
+			sender.send_stack(x, y, 0.5f, 1); // Sends the latest coords with dice-generated random number 4 for the next picture
 		}
 		verdana.drawString("X: " + ofToString(x, 2) + ", Y: " + ofToString(y, 2), 20, 600);
 //		verdana.drawString("startX: " + ofToString(startX, 2) + ", startY: " + ofToString(startY, 2), 700, 650);
 		if ((y <= (startY + 40)) && (y >= (startY - 40)) 
-		    && (x <= (startX + 200)) && !inYMode) // They are still in the hover corridor
+		    && (x <= (startX + 200)) && !inYMode) // They are still in the hover corridor TO THE RIGHT!
 		{
 //			verdana.drawString("You are in the corridor!", 20, 500);
 			ofSetColor(0, 255, 255);
@@ -134,7 +170,7 @@ void medical::draw()
 			}
 		}
 		else if ((x <= (startX + 40)) && (x >= (startX - 40))
-			 && (y >= (startY - 150)) && inYMode) // They are in the y-hover corridor
+			 && (y >= (startY - 150)) && inYMode) // They are in the y-hover corridor UPWARDS!
 		{
 //			verdana.drawString("In YMode!", 20, 500);
 			ofSetColor(255, 255, 0);
@@ -189,7 +225,14 @@ void medical::draw()
 			verdana.drawString("You have Activated the Widget!", 20, 500);
 			activated = true;
 		}
-		ofCircle(aX, aY, 10);
+		ofCircle(aX, aY, 10); //*/
+	}
+	else if (isActivated)
+	{
+		isActivated = false;
+		HW_FIRST_LEG = -1;
+		HW_SECOND_LEG = -1;
+		HW_CURRENT_DIRECTION = -1;
 	}
 	
 	switch (imageDisplayNumber)
@@ -230,6 +273,171 @@ void medical::calculateFramerate()
 		sprintf(buf, "Framerate: %f", myFramerate);
 	}
 	++myFrames;
+}
+
+void medical::hoverWidget(int x, int y)
+{
+	if (HW_CURRENT_DIRECTION == -1)
+	{
+		HW_FIRST_X = x;
+		HW_FIRST_Y = y;
+		HW_CURRENT_DIRECTION = DIRECTION_WAIT;
+	}
+	else if (HW_CURRENT_DIRECTION == DIRECTION_WAIT)
+	{
+		if (x < (HW_FIRST_X - HW_SPACE))
+		{
+//			cout << "Set direction left" << endl;
+			HW_CURRENT_DIRECTION = DIRECTION_LEFT;
+			HW_FIRST_X = x;
+			HW_FIRST_Y = y;
+		}
+		else if (x > (HW_FIRST_X + HW_SPACE))
+		{
+//			cout << "Set direction right" << endl;
+			HW_CURRENT_DIRECTION = DIRECTION_RIGHT;
+			HW_FIRST_X = x;
+			HW_FIRST_Y = y;
+		}
+		else if (y > (HW_FIRST_Y + HW_SPACE))
+		{
+//			cout << "Set direction down -------------------" << endl;
+			HW_CURRENT_DIRECTION = DIRECTION_DOWN;
+			HW_FIRST_X = x;
+			HW_FIRST_Y = y;
+		}
+		else if (y < (HW_FIRST_Y - HW_SPACE))
+		{
+//			cout << "Set direction up" << endl;
+			HW_CURRENT_DIRECTION = DIRECTION_UP;
+			HW_FIRST_X = x;
+			HW_FIRST_Y = y;
+		}
+	}
+	int result = inCorridor(HW_CURRENT_DIRECTION, x, y);
+	switch (result)
+	{
+		case 0:
+			HW_CURRENT_DIRECTION = -1;
+//			ofSetColor(255, 0, 0);
+			break;
+		case 1:
+//			ofSetColor(0, 255, 0);
+			isActivated = true;
+		default:
+			break;
+	}
+}
+
+int medical::inCorridor(int DIRECTION, int x, int y)
+{
+	switch (DIRECTION)
+	{
+		case DIRECTION_UP:
+			if ((x <= (HW_FIRST_X + HW_SPACE)) && (x >= (HW_FIRST_X - HW_SPACE))
+				&& (y >= (HW_FIRST_Y - HW_DISTANCE)))
+			{
+				ofSetColor(255, 255, 0);
+				HW_CURRENT_DIRECTION = DIRECTION_UP;
+				if (y <= (HW_FIRST_Y - (HW_DISTANCE - HW_SPACE)))
+				{
+					cout << "WE WENT UP" << endl;
+					ofSetColor(0, 255, 255);
+					if (HW_FIRST_LEG == -1)
+					{
+						HW_FIRST_LEG = DIRECTION_UP;
+						ofSetColor(255, 255, 0);
+						return 0;
+					}
+					else
+					{
+						HW_SECOND_LEG = DIRECTION_UP;
+						return 1;
+					}
+				}
+			}
+			else
+				return 0;
+			break;
+		case DIRECTION_DOWN:
+			if ((x <= (HW_FIRST_X + HW_SPACE)) && (x >= (HW_FIRST_X - HW_SPACE))
+				&& (y <= (HW_FIRST_Y + HW_DISTANCE)))
+			{
+				ofSetColor(255, 255, 0);
+				HW_CURRENT_DIRECTION = DIRECTION_DOWN;
+				if (y <= (HW_FIRST_Y - (HW_DISTANCE - HW_SPACE)))
+				{
+					cout << "WE WENT DOWN" << endl;
+					ofSetColor(0, 255, 255);
+					if (HW_FIRST_LEG == -1)
+					{
+						HW_FIRST_LEG = DIRECTION_DOWN;
+						return 0;
+					}
+					else
+					{
+						HW_SECOND_LEG = DIRECTION_DOWN;
+						return 1;
+					}
+				}
+			}
+			else
+				return 0;
+			break;
+		case DIRECTION_RIGHT:
+			if ((y <= (HW_FIRST_Y + HW_SPACE)) && (y >= (HW_FIRST_Y - HW_SPACE))
+				&& (x <= (HW_FIRST_X + HW_DISTANCE)))
+			{
+				ofSetColor(255, 255, 0);
+				HW_CURRENT_DIRECTION = DIRECTION_RIGHT;
+				if (x >= (HW_FIRST_X + (HW_DISTANCE - HW_SPACE)))
+				{
+					cout << "WE WENT RIGHT" << endl;
+					ofSetColor(0, 255, 255);
+					if (HW_FIRST_LEG == -1)
+					{
+						HW_FIRST_LEG = DIRECTION_RIGHT;
+						return 0;
+					}
+					else
+					{
+						HW_SECOND_LEG = DIRECTION_RIGHT;
+						return 1;
+					}
+				}
+			}
+			else
+				return 0;
+			break;
+		case DIRECTION_LEFT:
+			if ((y <= (HW_FIRST_Y + HW_SPACE)) && (y >= (HW_FIRST_Y - HW_SPACE))
+				&& (x >= (HW_FIRST_X - HW_DISTANCE)))
+			{
+				ofSetColor(255, 255, 0);
+				HW_CURRENT_DIRECTION = DIRECTION_LEFT;
+				if (x <= (HW_FIRST_X - (HW_DISTANCE - HW_SPACE)))
+				{
+					cout << "WE WENT LEFT" << endl;
+					ofSetColor(0, 255, 255);
+					if (HW_FIRST_LEG == -1)
+					{
+						HW_FIRST_LEG = DIRECTION_LEFT;
+						return 0;
+					}
+					else
+					{
+						HW_SECOND_LEG = DIRECTION_LEFT;
+						return 1;
+					}
+				}
+			}
+			else
+				return 0;
+			break;
+		default:
+			return 0;
+	}
+	return -1;
 }
 
 void medical::windowResized(int w, int h)
