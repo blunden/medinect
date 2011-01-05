@@ -1,5 +1,4 @@
 ofxThread
 ofxOpenCv
 ofxVectorMath
-ofxKinect
 ofxOsc
