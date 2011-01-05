@@ -3,4 +3,3 @@ ofxOpenCv
 ofxVectorMath
 ofxKinect
 ofxOsc
-ofxArgs
