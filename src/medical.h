@@ -34,18 +34,9 @@ class medical : public ofBaseApp
 		ofxCvGrayscaleImage	gestureThresh;
 		ofxCvGrayscaleImage	gestureThreshFar;
 
-		ofxCvContourFinder	activationFinder;
-
-		ofxCvGrayscaleImage	activationImage;
-		ofxCvGrayscaleImage	activationThresh;
-		ofxCvGrayscaleImage	activationThreshFar;
-		
 		int	nearGestureThreshold;
 		int	farGestureThreshold;
 
-		int	nearActivationThreshold;
-		int	farActivationThreshold;
-		
 		ofImage image1;
 		ofImage image2;
 		
@@ -90,9 +81,12 @@ class medical : public ofBaseApp
 		bool isActivated;
 		float ZOOM;
 		int STACK;
+		int X_STATE;
+		int Y_STATE;
 
 		void hoverWidget(int, int);
 		int inCorridor(int, int, int);
+		void printDebug(int, int);
 };
 
 #endif
